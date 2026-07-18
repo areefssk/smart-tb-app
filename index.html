@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ระบบ Smart TB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="./stylesheet.css">
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#0F6B5C">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+</head>
+<body>
+
+  <div class="app">
+
+    <nav class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-mark" id="brandMark"><i class="ti ti-lungs"></i></div>
+        <div class="brand-text"><span class="brand-text-1">Smart</span><span class="brand-text-2"> TB</span></div>
+      </div>
+      <ul class="nav-list" id="navList"></ul>
+      <div class="sidebar-footer">
+        <button class="login-btn" id="loginBtn" type="button"><i class="ti ti-login-2"></i><span>เข้าสู่ระบบ</span></button>
+        <div class="user-info-box" id="userInfoBox" style="display:none;">
+          <i class="ti ti-user-circle"></i>
+          <span id="userInfoName"></span>
+          <button class="icon-btn" id="logoutBtn" title="ออกจากระบบ"><i class="ti ti-logout"></i></button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="main">
+      <div class="topbar">
+        <div>
+          <h1 id="pageTitle">ทะเบียน TB ทั้งหมด</h1>
+          <div class="topbar-sub" id="pageSub">โรงพยาบาลศรีสาคร · ผู้ป่วยวัณโรคทั้งหมดในระบบ</div>
+        </div>
+        <div class="topbar-clock-wrap">
+          <div class="topbar-clock" id="topbarClock">
+            <i class="ti ti-clock"></i>
+            <div>
+              <div class="clock-time" id="clockTime">00:00:00</div>
+              <div class="clock-date" id="clockDate">-</div>
+            </div>
+            <i class="ti ti-calendar" style="font-size:16px; opacity:0.85;"></i>
+          </div>
+          <div class="clock-popover" id="clockPopover"></div>
+        </div>
+        <div class="search">
+          <i class="ti ti-search"></i>
+          <input type="text" id="searchInput" placeholder="ค้นหาชื่อ, HN, เลข TB...">
+          <button class="search-clear-btn" id="searchInputClear" type="button" style="display:none;"><i class="ti ti-x"></i></button>
+        </div>
+      </div>
+
+      <div class="content" id="content"></div>
+      <div style="position:absolute; bottom:8px; right:12px; font-size:10px; color:var(--ink-3); opacity:0.6;" id="buildMarker">build v6 · ping: ...</div>
+    </div>
+
+    <div class="bottom-nav" id="bottomNav"></div>
+
+    <button class="fab" id="fabAdd" aria-label="เพิ่มผู้ป่วยใหม่"><i class="ti ti-plus"></i></button>
+    <button class="fab fab-export" id="exportExcelBtn" aria-label="ดาวน์โหลด Excel"><i class="ti ti-file-spreadsheet"></i></button>
+
+    <div class="modal-overlay" id="modalOverlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 id="formModalTitle">เพิ่มผู้ป่วยใหม่</h2>
+          <button class="icon-btn" id="modalClose" aria-label="ปิด"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-tabs">
+          <button class="modal-tab active" data-tab="t1">1. ข้อมูลการรักษา</button>
+          <button class="modal-tab" data-tab="t2">2. ข้อมูลส่วนตัวและการติดตาม</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-pane active" id="pane-t1"></div>
+          <div class="modal-pane" id="pane-t2"></div>
+        </div>
+        <div class="modal-footer">
+          <div class="modal-error" id="modalError"></div>
+          <button class="btn-ghost" id="modalCancel">ยกเลิก</button>
+          <button class="btn-primary" id="modalSave"><i class="ti ti-device-floppy"></i>บันทึก</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-overlay" id="loginModalOverlay">
+      <div class="modal login-modal">
+        <button class="icon-btn login-modal-close" id="loginModalClose" aria-label="ปิด"><i class="ti ti-x"></i></button>
+        <div class="login-split">
+          <div class="login-side">
+            <div class="login-side-blob login-side-blob-1"></div>
+            <div class="login-side-blob login-side-blob-2"></div>
+            <div class="login-side-content">
+              <div class="login-side-logo" id="loginSideLogo"><i class="ti ti-lungs"></i></div>
+              <p class="login-side-title">ระบบ Smart TB</p>
+              <p class="login-side-sub">บริหารจัดการผู้ป่วยวัณโรค โรงพยาบาลศรีสาคร</p>
+              <div class="login-side-dots"><span class="w"></span><span></span><span></span></div>
+            </div>
+          </div>
+          <div class="login-form-side">
+            <p class="login-form-title">ยินดีต้อนรับกลับ</p>
+            <p class="login-form-sub">เข้าสู่ระบบเพื่อดำเนินการต่อ</p>
+            <div class="field-group login-field">
+              <label>ชื่อผู้ใช้</label>
+              <div class="login-input-wrap"><i class="ti ti-user"></i><input type="text" id="loginUsername" autocomplete="username" placeholder="กรอกชื่อผู้ใช้"></div>
+            </div>
+            <div class="field-group login-field">
+              <label>รหัสผ่าน</label>
+              <div class="login-input-wrap login-input-wrap-pw"><i class="ti ti-lock"></i><input type="password" id="loginPassword" autocomplete="current-password" placeholder="กรอกรหัสผ่าน"></div>
+            </div>
+            <div class="modal-error" id="loginError" style="margin-bottom:8px;"></div>
+            <button class="login-submit-btn" id="loginSubmitBtn"><i class="ti ti-login-2"></i>เข้าสู่ระบบ</button>
+            <button class="btn-ghost login-cancel-btn" id="loginCancelBtn">ยกเลิก</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="contactModalOverlay">
+      <div class="modal">
+        <div class="modal-header">
+          <h2 id="contactModalTitle">เพิ่มผู้สัมผัสใหม่</h2>
+          <button class="icon-btn" id="contactModalClose" aria-label="ปิด"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-body" id="contactModalBody"></div>
+        <div class="modal-footer">
+          <div class="modal-error" id="contactModalError"></div>
+          <button class="btn-ghost" id="contactModalCancel">ยกเลิก</button>
+          <button class="btn-primary" id="contactModalSave"><i class="ti ti-device-floppy"></i>บันทึก</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-overlay" id="detailOverlay">
+      <div class="modal" style="max-width:560px;">
+        <div class="modal-header">
+          <h2 id="detailTitle">รายละเอียดผู้ป่วย</h2>
+          <button class="icon-btn" id="detailClose" aria-label="ปิด"><i class="ti ti-x"></i></button>
+        </div>
+        <div class="modal-tabs">
+          <button class="detail-tab-btn active" data-dtab="general" type="button">ทั่วไป</button>
+          <button class="detail-tab-btn" data-dtab="treatment" type="button">การรักษา</button>
+          <button class="detail-tab-btn" data-dtab="lab" type="button">ผลแลป</button>
+          <button class="detail-tab-btn" data-dtab="contact" type="button">ผู้สัมผัส</button>
+        </div>
+        <div class="modal-body" id="detailBody"></div>
+        <div class="modal-footer" style="flex-wrap:wrap;">
+          <button class="btn-ghost" id="detailPrintTB01Btn"><i class="ti ti-printer"></i>พิมพ์ TB01</button>
+          <button class="btn-ghost" id="detailPrintReferralBtn"><i class="ti ti-file-export"></i>ใบส่งต่อ</button>
+          <button class="btn-ghost" id="detailCloseBtn">ปิด</button>
+          <button class="btn-primary" id="detailEditBtn"><i class="ti ti-edit"></i>แก้ไขข้อมูล</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="./javascript.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./service-worker.js')
+          .then(function (reg) { console.log('SW registered:', reg.scope); })
+          .catch(function (err) { console.log('SW registration failed:', err); });
+      });
+    }
+  </script>
+</body>
+</html>
