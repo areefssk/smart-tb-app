@@ -1029,8 +1029,13 @@ function detailTabContent(key, d) {
     }
     let html = '';
     d.contactRecords.forEach(function(c){
+      const seenFields = new Set(); // กันไม่ให้แสดงซ้ำ ถ้าคอลัมน์ในชีตมีชื่อคล้ายกัน (ต่างแค่ช่องว่าง)
       Object.keys(c).forEach(function(k){
-        if (k !== 'TB') html += detailRow(k, c[k]);
+        if (k === 'TB') return;
+        const normKey = k.replace(/\s+/g, '');
+        if (seenFields.has(normKey)) return; // ข้ามคอลัมน์ที่ซ้ำ (เป็นคอลัมน์ที่ 2 ของฟิลด์เดียวกัน)
+        seenFields.add(normKey);
+        html += detailRow(k, c[k]);
       });
       html += '<div style="border-bottom:1px dashed var(--border); margin:10px 0;"></div>';
     });
