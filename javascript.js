@@ -1011,16 +1011,23 @@ function detailTabContent(key, d) {
     if (!d.labRecords || !d.labRecords.length) {
       return '<div class="placeholder"><i class="ti ti-flask"></i><h2>ไม่มีผลแลป</h2></div>';
     }
-    let html = '';
-    d.labRecords.forEach(function(lab){
-      html += detailRow('วันที่ตรวจ', lab['วันที่ตรวจ']);
-      html += detailRow('ชนิดส่งตรวจ', lab['ชนิดส่งตรวจ']);
-      html += detailRow('สาเหตุส่งตรวจ', lab['สาเหตุส่งตรวจ']);
-      html += '<div class="detail-row"><div class="dl">ผลเสมหะ</div><div class="dv">' + labResultBadge(lab['ผลเสมหะ']) + '</div></div>';
-      html += detailRow('หมายเหตุ', lab['หมายเหตุ']);
-      html += detailRow('Serial Number', lab['Serial Number']);
-      html += '<div style="border-bottom:1px dashed var(--border); margin:10px 0;"></div>';
+    const sortedLabs = d.labRecords.slice().sort(function(a, b){
+      return thaiDateToIso(b['วันที่ตรวจ']).localeCompare(thaiDateToIso(a['วันที่ตรวจ']));
     });
+    let html = '<div class="table-wrap"><table class="data-table"><thead><tr>' +
+      '<th>วันที่ตรวจ</th><th>ชนิด</th><th>สาเหตุ</th><th>ผลเสมหะ</th><th>หมายเหตุ</th><th>Serial no.</th>' +
+    '</tr></thead><tbody>';
+    sortedLabs.forEach(function(lab){
+      html += '<tr>' +
+        '<td>' + escapeHtml(lab['วันที่ตรวจ']) + '</td>' +
+        '<td>' + escapeHtml(lab['ชนิดส่งตรวจ']) + '</td>' +
+        '<td>' + escapeHtml(lab['สาเหตุส่งตรวจ']) + '</td>' +
+        '<td>' + labResultBadge(lab['ผลเสมหะ']) + '</td>' +
+        '<td>' + escapeHtml(lab['หมายเหตุ']) + '</td>' +
+        '<td>' + escapeHtml(lab['Serial Number']) + '</td>' +
+      '</tr>';
+    });
+    html += '</tbody></table></div>';
     return html;
   }
   if (key === 'contact') {
