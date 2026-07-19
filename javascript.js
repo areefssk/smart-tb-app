@@ -186,9 +186,13 @@ function skeletonDashboard() {
   const heroCards = new Array(4).fill(0).map(function(){ return '<div class="sk sk-hero"></div>'; }).join('');
   const statCards = new Array(3).fill(0).map(function(){ return '<div class="sk sk-stat"></div>'; }).join('');
   return '<div class="dash-loading-wrap">' +
-      '<div class="dash-loading-icon"><i class="ti ti-loader-2"></i></div>' +
-      '<h2>กำลังโหลดข้อมูลแดชบอร์ด...</h2>' +
-      '<p>รวบรวมสถิติผู้ป่วยวัณโรคทั้งหมดในระบบ</p>' +
+      '<div class="dash-loading-icon-wrap">' +
+        '<div class="dash-loading-ring dash-loading-ring-1"></div>' +
+        '<div class="dash-loading-ring dash-loading-ring-2"></div>' +
+        '<div class="dash-loading-icon"><i class="ti ti-lungs"></i></div>' +
+      '</div>' +
+      '<h2>ยินดีต้อนรับเข้าสู่ระบบ Smart TB</h2>' +
+      '<p>กำลังเตรียมข้อมูลผู้ป่วยวัณโรคให้คุณ</p>' +
     '</div>' +
     '<div class="hero-grid">' + heroCards + '</div>' +
     '<div class="stat-grid">' + statCards + '</div>';

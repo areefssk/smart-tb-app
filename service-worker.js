@@ -7,7 +7,7 @@
  * เพิ่มเวอร์ชัน CACHE_NAME ทุกครั้งที่แก้ไฟล์แอป เพื่อบังคับให้ผู้ใช้โหลดของใหม่
  */
 
-const CACHE_NAME = 'smart-tb-cache-v5';
+const CACHE_NAME = 'smart-tb-cache-v6';
 
 const APP_SHELL = [
   './',
