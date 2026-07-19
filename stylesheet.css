@@ -227,7 +227,7 @@
   .row-actions{display:flex; align-items:center; gap:8px; flex-shrink:0;}
   .row-sub{font-size:12.5px; color:var(--ink-2); margin-top:3px;}
   .stat-grid{
-    display:grid; grid-template-columns:repeat(2, 1fr); gap:16px;
+    display:grid; grid-template-columns:1fr; gap:16px;
   }
   .stat-card.wide{grid-column:1 / -1;}
 
@@ -245,6 +245,9 @@
   .hero-grid{
     display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
     gap:16px; margin-bottom:20px;
+  }
+  @media (max-width:680px){
+    .hero-grid{grid-template-columns:repeat(2, 1fr) !important;}
   }
   .hero-card{
     position:relative; overflow:hidden; border-radius:18px;
